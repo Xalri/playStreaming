@@ -101,7 +101,6 @@
           if (error) {
             document.getElementById('card-errors').innerText = error.message;
           } else {
-            // Send the token to your server
             const response = await fetch('/charge', {
               method: 'POST',
               headers: {
@@ -109,7 +108,7 @@
               },
               body: JSON.stringify({
                 token: token.id,
-                amount: 5000 // Amount in cents ($50.00)
+                amount: 300
               })
             });
 
