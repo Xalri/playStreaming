@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Paiement</title>
+  <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+
+
+  <meta name="title" content="PlayStreaming - Free Forever">
+  <meta name="description" content="PlayStreaming est un site de streaming de films, de séries et d'animés gratuit !">
+
+
+
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/swiper.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <link href="https://cdn.jsdelivr.net/gh/hung1001/font-awesome-pro@4cac1a6/css/all.min.css" rel="stylesheet" type="text/css">
+  <link type="text/css" href="//fonts.googleapis.com/css?family=Google%20Sans%20Text%3A400%2C500%2C700" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    form {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 10px;
+    }
+
+    #card-errors {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="page-container">
+    <header>
+      <div class="container">
+        <h1 class="logo">PlayStreaming</h1>
+        <nav class="header">
+          <ul id="header-nav">
+            <li><a href="/home" class="active"><i class="fas fa-home"></i><span class="nav-text"> Accueil</span></a></li>
+            <li><a href="/movies"><i class="fas fa-camera-movie"></i><span class="nav-text"> Films</span></a></li>
+            <li><a href="/tv-shows"><i class="fas fa-tv"></i><span class="nav-text"> Séries</span></a></li>
+            <li><a href="/animes"><i class="fas fa-user-secret"></i><span class="nav-text"> Animés</span></a></li>
+            <li><a href="/watchlist"><i class="fas fa-clipboard-list"></i><span class="nav-text"> Ma liste</span></a></li>
+            <li><a href="/partners"><i class="fas fa-handshake-alt"></i><span class="nav-text"> Partenaires</span></a></li>
+          </ul>
+          <div class="search-container"><input type="text" placeholder="Rechercher..." class="search-input" id="searchInput" onkeyup="if (!window.__cfRLUnblockHandlers) return false; performSearch()"> <button class="search-button" title="Recherche"><i class="fas fa-search"></i></button>
+            <ul id="searchResults" class="dropdown-search-results"></ul>
+          </div>
+          <div id="user-container" class="user-container"><i class="fas fa-user" onclick="if (!window.__cfRLUnblockHandlers) return false; toggleDropdown(event)"></i>
+            <div id="userDropdown" class="dropdown-content"><a href="/premium" class="crown"><i class="fas fa-crown"></i> Premium</a> <a href="/dashboard?category=profile"><i class="fas fa-user"></i> Profil</a> <a href="/favorites" class="heart"><i class="fas fa-heart"></i> Favoris</a> <a href="/dashboard?category=settings"><i class="fas fa-cog"></i> Paramètres</a> <a href="/logout"><i class="fas fa-sign-out"></i> Déconnexion</a></div>
+          </div>
+        </nav>
+      </div>
+      <div id="movebat">
+        <div id="size">
+          <div id="bats"></div>
+        </div>
+      </div>
+    </header>
+    <div class="content-page">
+      <h1>Paiement</h1>
+      <form id="payment-form">
+        <div id="card-element">
+        </div>
+        <button type="submit">Pay</button>
+      </form>
+      <div id="card-errors" role="alert"></div>
+      <div id="payment-result"></div>
+
+      <script>
+        const stripe = Stripe('<%= STRIPE_PUBLIC_KEY %>');
+        const elements = stripe.elements();
+        const cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+
+          const {
+            token,
+            error
+          } = await stripe.createToken(cardElement);
+          if (error) {
+            document.getElementById('card-errors').innerText = error.message;
+          } else {
+            // Send the token to your server
+            const response = await fetch('/charge', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                token: token.id,
+                amount: 5000 // Amount in cents ($50.00)
+              })
+            });
+
+            const result = await response.json();
+            if (result.error) {
+              document.getElementById('card-errors').innerText = result.error;
+            } else {
+              document.getElementById('payment-result').innerText = 'Payment successful! Charge ID: ' + result.charge.id;
+            }
+          }
+        });
+      </script>
+    </div>
+  </div>
+  <footer style="height: auto !important;">
+    <div class="container" style="height: auto !important;">
+      <div class="h-separator"></div>
+      <div class="footer-brand"><img src="/img/logo.png" alt="PlayStreaming Logo" class="footer-logo" style="display:none">
+        <h1>PlayStreaming</h1>
+      </div>
+      <div class="footer-socials"><a class="social-link"><i class="fab fa-instagram"></i>Instagram</a> <a class="social-link"><i class="fab fa-tiktok"></i>TikTok</a> <a class="social-link"><i class="fab fa-discord"></i>Discord</a></div>
+      <p>Ce site n'héberge aucun film ni série. Toutes les publicités servent à maintenir le site ouvert.<br>Copyright © 2024 PlayStreaming.</p>
+    </div>
+  </footer>
+</body>
+
+</html>
