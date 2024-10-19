@@ -85,7 +85,7 @@
       <div id="payment-result"></div>
 
       <script>
-        const stripe = Stripe('<%= STRIPE_PUBLIC_KEY %>');
+        const stripe = Stripe('API_KEY');
         const elements = stripe.elements();
         const cardElement = elements.create('card');
         cardElement.mount('#card-element');
